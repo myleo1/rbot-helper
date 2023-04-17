@@ -1,5 +1,5 @@
 # R-Bot Helper
 
-> R探多profile切换 
+> R探长多profile切换 
 
 TODO
