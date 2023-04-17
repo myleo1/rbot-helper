@@ -1,0 +1,31 @@
+{
+  "rest": {
+    "port": 9000,
+    "base": "rbot-helper"
+  },
+  "token": "94ab50n4-xxxx-xxxx-xxxx-gln9443731gg",
+  "rbot": {
+    "container": "rbot",
+    "oracle": [
+      {
+        "name": "1",
+        "value": ""
+      }
+    ],
+    "azure": [
+      {
+        "name": "1",
+        "value": ""
+      },
+      {
+        "name": "2",
+        "value": ""
+      },
+      {
+        "name": "3",
+        "value": ""
+      }
+    ],
+    "other": ""
+  }
+}
