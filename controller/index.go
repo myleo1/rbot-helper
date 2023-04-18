@@ -23,8 +23,6 @@ type profileParams struct {
 func profile(ctx *context.Context) {
 	params := &profileParams{}
 	ctx.BindForm(params)
-	c := service.NewConfig(params.OracleName, params.AzureName)
-	c.MakeConfig()
-	c.RestartRBot()
+	service.ChangeProfile(params.OracleName, params.AzureName)
 	ctx.JsonSuccess("ok")
 }

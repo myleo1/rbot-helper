@@ -12,17 +12,28 @@ import (
 	"github.com/mizuki1412/go-core-kit/service/configkit"
 	"github.com/mizuki1412/go-core-kit/service/logkit"
 	"github.com/spf13/cast"
+	"sync"
 )
 
-type Config struct {
-	OracleName string
-	OracleVal  string
-	AzureName  string
-	AzureVal   string
-	Other      string
+var mu sync.Mutex
+
+type config struct {
+	oracleName string
+	oracleVal  string
+	azureName  string
+	azureVal   string
+	other      string
 }
 
-func NewConfig(oracleName, azureName string) *Config {
+func ChangeProfile(oracleName, azureName string) {
+	mu.Lock()
+	defer mu.Unlock()
+	c := newProfile(oracleName, azureName)
+	c.makeProfile()
+	c.restartRBot()
+}
+
+func newProfile(oracleName, azureName string) *config {
 	configOracle := configkit.Get("rbot.oracle", "")
 	configAzure := configkit.Get("rbot.azure", "")
 	if configOracle == "" && configAzure == "" {
@@ -37,41 +48,41 @@ func NewConfig(oracleName, azureName string) *Config {
 	if other == "" {
 		logkit.Fatal("rbot other information null")
 	}
-	c := &Config{}
+	c := &config{}
 	for _, v := range configListOracle {
 		m := cast.ToStringMapString(v)
 		if m["name"] == oracleName {
-			c.OracleVal = m["value"]
+			c.oracleVal = m["value"]
 			break
 		}
 	}
 	for _, v := range configListAzure {
 		m := cast.ToStringMapString(v)
 		if m["name"] == azureName {
-			c.AzureVal = m["value"]
+			c.azureVal = m["value"]
 			break
 		}
 	}
-	c.OracleName = oracleName
-	c.AzureName = azureName
-	c.Other = other
+	c.oracleName = oracleName
+	c.azureName = azureName
+	c.other = other
 	return c
 }
 
-func (th *Config) MakeConfig() {
+func (th *config) makeProfile() {
 	//oci
-	c := "oci=begin\n\n[" + th.OracleName + "]\n" + th.OracleVal + "\n\noci=end\n\n"
+	c := "oci=begin\n\n[" + th.oracleName + "]\n" + th.oracleVal + "\n\noci=end\n\n"
 	//other
-	c = c + th.Other + "\n\n"
+	c = c + th.other + "\n\n"
 	//azure
-	c = c + "azure=begin\n\n[" + th.AzureName + "]\n" + th.AzureVal + "\n\nazure=end\n\n"
+	c = c + "azure=begin\n\n[" + th.azureName + "]\n" + th.azureVal + "\n\nazure=end\n\n"
 	err := filekit.WriteFile("/root/client_config", []byte(c))
 	if err != nil {
 		panic(exception.New("write client_config file error"))
 	}
 }
 
-func (th *Config) RestartRBot() {
+func (th *config) restartRBot() {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(exception.New(err.Error()))
