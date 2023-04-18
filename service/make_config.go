@@ -92,7 +92,7 @@ func (th *config) restartRBot() {
 	if containerName == "" {
 		panic(exception.New("rbot container name get error"))
 	}
-	containerListOptions := types.ContainerListOptions{All: true, Filters: filters.NewArgs(filters.Arg("name", containerName))}
+	containerListOptions := types.ContainerListOptions{All: true, Filters: filters.NewArgs(filters.Arg("name", "^"+containerName+"$"))}
 	containers, err := cli.ContainerList(context.Background(), containerListOptions)
 	if err != nil {
 		panic(exception.New(err.Error()))
